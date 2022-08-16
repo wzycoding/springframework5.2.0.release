@@ -90,7 +90,8 @@ public class EventListenerMethodProcessor
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 		this.beanFactory = beanFactory;
 
-		Map<String, EventListenerFactory> beans = beanFactory.getBeansOfType(EventListenerFactory.class, false, false);
+		Map<String, EventListenerFactory> beans = beanFactory.getBeansOfType(
+				EventListenerFactory.class, false, false);
 		List<EventListenerFactory> factories = new ArrayList<>(beans.values());
 		AnnotationAwareOrderComparator.sort(factories);
 		this.eventListenerFactories = factories;
@@ -153,7 +154,8 @@ public class EventListenerMethodProcessor
 				//提取被@EventListener标记的方法实例
 				annotatedMethods = MethodIntrospector.selectMethods(targetType,
 						(MethodIntrospector.MetadataLookup<EventListener>) method ->
-								AnnotatedElementUtils.findMergedAnnotation(method, EventListener.class));
+								AnnotatedElementUtils.findMergedAnnotation(method,
+										EventListener.class));
 			}
 			catch (Throwable ex) {
 				// An unresolvable type in a method signature, probably from a lazy bean - let's ignore it.
@@ -173,16 +175,20 @@ public class EventListenerMethodProcessor
 				ConfigurableApplicationContext context = this.applicationContext;
 				Assert.state(context != null, "No ApplicationContext set");
 				List<EventListenerFactory> factories = this.eventListenerFactories;
-				Assert.state(factories != null, "EventListenerFactory List not initialized");
+				Assert.state(factories != null,
+						"EventListenerFactory List not initialized");
 				for (Method method : annotatedMethods.keySet()) {
 					for (EventListenerFactory factory : factories) {
 						if (factory.supportsMethod(method)) {
 							//转换成事件监听器实例并注册到容器里
-							Method methodToUse = AopUtils.selectInvocableMethod(method, context.getType(beanName));
+							Method methodToUse = AopUtils.selectInvocableMethod(method,
+									context.getType(beanName));
 							ApplicationListener<?> applicationListener =
-									factory.createApplicationListener(beanName, targetType, methodToUse);
+									factory.createApplicationListener(beanName, targetType,
+											methodToUse);
 							if (applicationListener instanceof ApplicationListenerMethodAdapter) {
-								((ApplicationListenerMethodAdapter) applicationListener).init(context, this.evaluator);
+								((ApplicationListenerMethodAdapter) applicationListener)
+										.init(context, this.evaluator);
 							}
 							context.addApplicationListener(applicationListener);
 							break;
