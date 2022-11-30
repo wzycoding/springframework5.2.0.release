@@ -34,6 +34,9 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 public interface BeanDefinitionRegistryPostProcessor extends BeanFactoryPostProcessor {
 
 	/**
+	 * 修改应用程序上下文的内部bean定义注册表，标准的初始化。所有常规bean定义都将被加载，
+	 * 但是还没有实例化任何bean。这允许进一步添加，下一个后处理阶段开始之前的Bean定义。
+	 *
 	 * Modify the application context's internal bean definition registry after its
 	 * standard initialization. All regular bean definitions will have been loaded,
 	 * but no beans will have been instantiated yet. This allows for adding further
