@@ -110,6 +110,7 @@ public class ClassPathXmlApplicationContext extends AbstractXmlApplicationContex
 	}
 
 	/**
+	 * 创建一个
 	 * Create a new ClassPathXmlApplicationContext, loading the definitions
 	 * from the given XML files.
 	 * @param configLocations array of resource locations

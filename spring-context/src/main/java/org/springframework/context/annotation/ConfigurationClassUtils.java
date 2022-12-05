@@ -120,7 +120,7 @@ abstract class ConfigurationClassUtils {
 				return false;
 			}
 		}
-
+        // 判断元信息中是否有Configuration注解信息，如果没有直接返回false说明是一个非配置类
 		Map<String, Object> config = metadata.getAnnotationAttributes(Configuration.class.getName());
 		if (config != null && !Boolean.FALSE.equals(config.get("proxyBeanMethods"))) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
