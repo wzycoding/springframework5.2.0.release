@@ -644,14 +644,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 		//若允许循环依赖，则解决相关的循环依赖
-		if (earlySingletonExposure) {
+		if (early SingletonExposure) {
 			//获取指定名称的已注册的单例模式Bean对象
 			Object earlySingletonReference = getSingleton(beanName, false);
 			if (earlySingletonReference != null) {
 				//如果经过initializeBean执行后返回的bean还是同一个（不是代理对象实例,即没有被增强）
-				if (exposedObject == bean) {
+ 				if (exposedObject == bean) {
 					// 确保根据名称获取到的的已注册的Bean和正在实例化的Bean是同一个
-					exposedObject = earlySingletonReference;
+ 					exposedObject = earlySingletonReference;
 				}
 				//如果上面的if没通过，则表明引用的bean和注入的bean不一致，则需要看看依赖于此Bean的先前是否已经注入了不完善的Bean
 				// allowRawInjectionDespiteWrapping 标注是否允许此Bean的原始类型被注入到其它Bean里面，

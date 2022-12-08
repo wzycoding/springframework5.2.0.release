@@ -1,6 +1,9 @@
 package com.wzy.service;
 
 
+import com.wzy.entity.Cat;
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
  * @author wzy
  */
