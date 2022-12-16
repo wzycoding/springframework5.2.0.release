@@ -52,9 +52,13 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
+ * JavaBeans的静态方法工具类，用于实例化bean，
+ * 检查bean属性属性，复制bean属性
+ *
  * Static convenience methods for JavaBeans: for instantiating beans,
  * checking bean property types, copying bean properties, etc.
  *
+ * 主要在框架内使用，但是在某种程度上对应用程序也非常实用（来自Spring的暗示）。
  * <p>Mainly for use within the framework, but to some degree also
  * useful for application classes.
  *
@@ -71,6 +75,9 @@ public abstract class BeanUtils {
 	private static final Set<Class<?>> unknownEditorTypes =
 			Collections.newSetFromMap(new ConcurrentReferenceHashMap<>(64));
 
+	/**
+	 * 存储一些类型的默认值，如boolean、byte等
+	 */
 	private static final Map<Class<?>, Object> DEFAULT_TYPE_VALUES;
 
 	static {
@@ -80,26 +87,31 @@ public abstract class BeanUtils {
 		values.put(short.class, (short) 0);
 		values.put(int.class, 0);
 		values.put(long.class, (long) 0);
+		// 创建一个不能修改的map，赋值给DEFAULT_TYPE_VALUES
 		DEFAULT_TYPE_VALUES = Collections.unmodifiableMap(values);
 	}
 
 
 	/**
+	 * 方便的方法去实例化一个bean通过它的无参构造方法
 	 * Convenience method to instantiate a class using its no-arg constructor.
-	 * @param clazz class to instantiate
-	 * @return the new instance
-	 * @throws BeanInstantiationException if the bean cannot be instantiated
-	 * @deprecated as of Spring 5.0, following the deprecation of
+	 * @param clazz class to instantiate 要实例化的类
+	 * @return the new instance 创建的实例
+	 * @throws BeanInstantiationException if the bean cannot be instantiated 如果bean不能被初始化则抛出异常
+	 * @deprecated as of Spring 5.0, following the deprecation of spring5.0之后被废弃
 	 * {@link Class#newInstance()} in JDK 9
 	 * @see Class#newInstance()
 	 */
 	@Deprecated
 	public static <T> T instantiate(Class<T> clazz) throws BeanInstantiationException {
+		// clazz不能为空，如果为null抛出异常
 		Assert.notNull(clazz, "Class must not be null");
+		// 如果是一个接口则抛出异常
 		if (clazz.isInterface()) {
 			throw new BeanInstantiationException(clazz, "Specified class is an interface");
 		}
 		try {
+			// 调用class方法的newInstance()方法，通过无参构造方法创建对象
 			return clazz.newInstance();
 		}
 		catch (InstantiationException ex) {
@@ -116,9 +128,16 @@ public abstract class BeanUtils {
 	 * (for regular Java classes, expecting a standard no-arg setup).
 	 * <p>Note that this method tries to set the constructor accessible
 	 * if given a non-accessible (that is, non-public) constructor.
-	 * @param clazz the class to instantiate
-	 * @return the new instance
-	 * @throws BeanInstantiationException if the bean cannot be instantiated.
+	 *
+	 * 使用类的'主要'构造函数（对于Kotlin类，
+	 * 可能声明了默认参数）或其默认构造函数
+	 * （常规的java类，需要设置一个标准的无参构造函数）
+	 * 注意，如果给定一个不可访问的（即非public）的构造函数，此方法尝试去设置构造函数是可访问的
+	 * @param clazz the class to instantiate 要实例化的class
+	 * @return the new instance 实例化的bean
+	 * @throws BeanInstantiationException if the bean cannot be instantiated. 如果不能时候bean则抛出
+	 *
+	 * 如果没有一个主构造函数或者默认构造函数，会抛出异常
 	 * The cause may notably indicate a {@link NoSuchMethodException} if no
 	 * primary/default constructor was found, a {@link NoClassDefFoundError}
 	 * or other {@link LinkageError} in case of an unresolvable class definition
@@ -132,9 +151,13 @@ public abstract class BeanUtils {
 			throw new BeanInstantiationException(clazz, "Specified class is an interface");
 		}
 		try {
+			// 获取所有无参构造函数（因为没有指定类型）去实例化对象
+			// getDeclaredConstructor(): 获取所有构造函数包含private
+			// getConstructor()：获取所有public的构造函数
 			return instantiateClass(clazz.getDeclaredConstructor());
 		}
 		catch (NoSuchMethodException ex) {
+			// Kotlin的话去获取primary构造函数，同样调用方法实例化对象
 			Constructor<T> ctor = findPrimaryConstructor(clazz);
 			if (ctor != null) {
 				return instantiateClass(ctor);
@@ -147,6 +170,7 @@ public abstract class BeanUtils {
 	}
 
 	/**
+	 * 实例化一个class类的对象通过无参构造方法，并且返回一个实例需要是assignableTo类型的子类
 	 * Instantiate a class using its no-arg constructor and return the new instance
 	 * as the specified assignable type.
 	 * <p>Useful in cases where the type of the class to instantiate (clazz) is not
@@ -166,37 +190,50 @@ public abstract class BeanUtils {
 	}
 
 	/**
+	 * 使用给定的方法去实例化一个类的对象
+	 * 注意，这个方法尝试将给定的构造函数设置成可访问的
+	 * 不可访问(即非公共)构造函数，并支持Kotlin类
+	 * 可选参数和默认值。
+	 *
 	 * Convenience method to instantiate a class using the given constructor.
 	 * <p>Note that this method tries to set the constructor accessible if given a
 	 * non-accessible (that is, non-public) constructor, and supports Kotlin classes
 	 * with optional parameters and default values.
-	 * @param ctor the constructor to instantiate
-	 * @param args the constructor arguments to apply (use {@code null} for an unspecified
+	 * @param ctor the constructor to instantiate 实例化的构造函数
+	 * @param args the constructor arguments to apply (use {@code null} for an unspecified 构造函数参数
 	 * parameter, Kotlin optional parameters and Java primitive types are supported)
 	 * @return the new instance
-	 * @throws BeanInstantiationException if the bean cannot be instantiated
+	 * @throws BeanInstantiationException if the bean cannot be instantiated 如果bean不能被实例化则抛出
 	 * @see Constructor#newInstance
 	 */
 	public static <T> T instantiateClass(Constructor<T> ctor, Object... args) throws BeanInstantiationException {
 		Assert.notNull(ctor, "Constructor must not be null");
 		try {
+			// 设置可访问
 			ReflectionUtils.makeAccessible(ctor);
+			// 如果是Kotlin的类，按照Kotlin处理
 			if (KotlinDetector.isKotlinReflectPresent() && KotlinDetector.isKotlinType(ctor.getDeclaringClass())) {
 				return KotlinDelegate.instantiateClass(ctor, args);
 			}
 			else {
+				// 获取构造函数的参数类型
 				Class<?>[] parameterTypes = ctor.getParameterTypes();
+				// 判断提提供的参数和构造函数本身的参数是否相同
 				Assert.isTrue(args.length <= parameterTypes.length, "Can't specify more arguments than constructor parameters");
+				// 创建参数数组，根据参数长度
 				Object[] argsWithDefaultValues = new Object[args.length];
 				for (int i = 0 ; i < args.length; i++) {
 					if (args[i] == null) {
+						// 如果为空，并且是基本类型，则按照默认值赋值
 						Class<?> parameterType = parameterTypes[i];
 						argsWithDefaultValues[i] = (parameterType.isPrimitive() ? DEFAULT_TYPE_VALUES.get(parameterType) : null);
 					}
 					else {
+						// 如果不为空直接赋值
 						argsWithDefaultValues[i] = args[i];
 					}
 				}
+				// 使用构造函数创建对象
 				return ctor.newInstance(argsWithDefaultValues);
 			}
 		}
@@ -215,6 +252,8 @@ public abstract class BeanUtils {
 	}
 
 	/**
+	 * 针对Kotlin才有意义，普通的则返回null
+	 *
 	 * Return the primary constructor of the provided class. For Kotlin classes, this
 	 * returns the Java constructor corresponding to the Kotlin primary constructor
 	 * (as defined in the Kotlin specification). Otherwise, in particular for non-Kotlin
@@ -237,30 +276,44 @@ public abstract class BeanUtils {
 	}
 
 	/**
+	 * 给定方法名和参数类型，查找method，
+	 * 在给定类或者其父类，会优先返回public方法，
+	 * 也还会返回protected、包级别、或者私有方法
+	 *
+	 * 即使在Java安全设置受限的环境中也不会出现问题。
+	 *
 	 * Find a method with the given method name and the given parameter types,
 	 * declared on the given class or one of its superclasses. Prefers public methods,
 	 * but will return a protected, package access, or private method too.
 	 * <p>Checks {@code Class.getMethod} first, falling back to
 	 * {@code findDeclaredMethod}. This allows to find public methods
 	 * without issues even in environments with restricted Java security settings.
-	 * @param clazz the class to check
-	 * @param methodName the name of the method to find
-	 * @param paramTypes the parameter types of the method to find
-	 * @return the Method object, or {@code null} if not found
+	 * @param clazz the class to check class对象
+	 * @param methodName the name of the method to find 方法名
+	 * @param paramTypes the parameter types of the method to find 参数类型
+	 * @return the Method object, or {@code null} if not found 返回发现的方法或者没有找到
 	 * @see Class#getMethod
 	 * @see #findDeclaredMethod
 	 */
 	@Nullable
 	public static Method findMethod(Class<?> clazz, String methodName, Class<?>... paramTypes) {
 		try {
+			// 根据方法名和参数类型查找public方法
 			return clazz.getMethod(methodName, paramTypes);
 		}
 		catch (NoSuchMethodException ex) {
+			// 根据方法名和参数类型查找所有方法包含private
 			return findDeclaredMethod(clazz, methodName, paramTypes);
 		}
 	}
 
 	/**
+	 * 查找一个方法通过给定的方法名和参数类型
+	 *
+	 * 返回给定class或者父类的public,
+	 * protected, package 级别的, private 方法.
+	 * 查找方法会向上递归查找到所有父类
+	 *
 	 * Find a method with the given method name and the given parameter types,
 	 * declared on the given class or one of its superclasses. Will return a public,
 	 * protected, package access, or private method.
@@ -735,6 +788,7 @@ public abstract class BeanUtils {
 
 	/**
 	 * Inner class to avoid a hard dependency on Kotlin at runtime.
+	 * 内部类来避免运行时对Kotlin的强依赖
 	 */
 	private static class KotlinDelegate {
 
