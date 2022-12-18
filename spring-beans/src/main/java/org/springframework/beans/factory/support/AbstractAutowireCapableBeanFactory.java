@@ -644,7 +644,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 		//若允许循环依赖，则解决相关的循环依赖
-		if (early SingletonExposure) {
+		if (earlySingletonExposure) {
 			//获取指定名称的已注册的单例模式Bean对象
 			Object earlySingletonReference = getSingleton(beanName, false);
 			if (earlySingletonReference != null) {

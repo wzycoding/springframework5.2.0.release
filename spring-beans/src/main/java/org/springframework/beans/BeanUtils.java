@@ -338,6 +338,10 @@ public abstract class BeanUtils {
 	}
 
 	/**
+	 * 使用给定的方法名和最小参数找到一个方法
+	 * 定义在给定类或者它的超类上，优先查找公有方法，
+	 * 但是也会返回protected、包级别的、private级别的方法
+	 *
 	 * Find a method with the given method name and minimal parameters (best case: none),
 	 * declared on the given class or one of its superclasses. Prefers public methods,
 	 * but will return a protected, package access, or private method too.
@@ -355,8 +359,9 @@ public abstract class BeanUtils {
 	@Nullable
 	public static Method findMethodWithMinimalParameters(Class<?> clazz, String methodName)
 			throws IllegalArgumentException {
-
+		// 根据方法数组和方法名查询
 		Method targetMethod = findMethodWithMinimalParameters(clazz.getMethods(), methodName);
+		// 如果当前类的公有方法没有找到，则查找私有方法和父类的方法
 		if (targetMethod == null) {
 			targetMethod = findDeclaredMethodWithMinimalParameters(clazz, methodName);
 		}
@@ -364,6 +369,7 @@ public abstract class BeanUtils {
 	}
 
 	/**
+	 * 在类中查找最小参数的方法，找不到再父类上面找
 	 * Find a method with the given method name and minimal parameters (best case: none),
 	 * declared on the given class or one of its superclasses. Will return a public,
 	 * protected, package access, or private method.
@@ -378,15 +384,18 @@ public abstract class BeanUtils {
 	@Nullable
 	public static Method findDeclaredMethodWithMinimalParameters(Class<?> clazz, String methodName)
 			throws IllegalArgumentException {
-
+		// 获取当前类的所有方法
 		Method targetMethod = findMethodWithMinimalParameters(clazz.getDeclaredMethods(), methodName);
 		if (targetMethod == null && clazz.getSuperclass() != null) {
+			// 递归调用，获取父类的class
 			targetMethod = findDeclaredMethodWithMinimalParameters(clazz.getSuperclass(), methodName);
 		}
 		return targetMethod;
 	}
 
 	/**
+	 * 获取给定的方法数组里面查找对应方法名称，最小参数的方法
+	 *
 	 * Find a method with the given method name and minimal parameters (best case: none)
 	 * in the given list of methods.
 	 * @param methods the methods to check
@@ -400,26 +409,34 @@ public abstract class BeanUtils {
 			throws IllegalArgumentException {
 
 		Method targetMethod = null;
+		// 符合要求的方法个数
 		int numMethodsFoundWithCurrentMinimumArgs = 0;
 		for (Method method : methods) {
+			// 如果方法名相等
 			if (method.getName().equals(methodName)) {
+				// 获取方法参数
 				int numParams = method.getParameterCount();
+				// 如果目标方法为空 或者参数数量小于当前目标方法的参数数量就重新赋值
 				if (targetMethod == null || numParams < targetMethod.getParameterCount()) {
 					targetMethod = method;
 					numMethodsFoundWithCurrentMinimumArgs = 1;
 				}
+				// 不是桥接方法（为了擦除泛型自动生成的）且参数数量等于目标方法的参数个数相等
 				else if (!method.isBridge() && targetMethod.getParameterCount() == numParams) {
 					if (targetMethod.isBridge()) {
+						// 优先常规方法覆盖桥接方法
 						// Prefer regular method over bridge...
 						targetMethod = method;
 					}
 					else {
 						// Additional candidate with same length
+						// 如果长度相同则自增统计值
 						numMethodsFoundWithCurrentMinimumArgs++;
 					}
 				}
 			}
 		}
+		// 如果大于1个，则抛出异常，说明有两个最小参数长度方法不止一个
 		if (numMethodsFoundWithCurrentMinimumArgs > 1) {
 			throw new IllegalArgumentException("Cannot resolve method '" + methodName +
 					"' to a unique method. Attempted to resolve to overloaded method with " +
