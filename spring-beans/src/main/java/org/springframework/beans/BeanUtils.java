@@ -525,6 +525,7 @@ public abstract class BeanUtils {
 	 * @throws BeansException if PropertyDescriptor look fails
 	 */
 	public static PropertyDescriptor[] getPropertyDescriptors(Class<?> clazz) throws BeansException {
+		// 从缓存JavaBean的内部类获取属性描述符信息
 		CachedIntrospectionResults cr = CachedIntrospectionResults.forClass(clazz);
 		return cr.getPropertyDescriptors();
 	}
