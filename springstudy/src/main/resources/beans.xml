@@ -8,8 +8,7 @@
 <!--    <context:component-scan base-package="com.wzy"/>-->
     <bean id="userService" class="com.wzy.service.UserService"/>
 
-    <bean id="a" class="com.wzy.circle.A">
-        <property name="b" ref="b"/>
+    <bean id="a" class="com.wzy.circle.A" autowire="byName">
     </bean>
     <bean id="b" class="com.wzy.circle.B">
         <property name="a" ref="a"/>
