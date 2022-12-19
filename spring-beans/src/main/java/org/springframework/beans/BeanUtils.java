@@ -447,6 +447,11 @@ public abstract class BeanUtils {
 	}
 
 	/**
+	 * 解析方法签名，从方法名和参数列表，
+	 * 参数列表是可选的，逗号分隔的全限定列表
+	 * 只有名称和参数类型匹配的方法才返回
+	 * 如果找不到方法则返回null
+	 *
 	 * Parse a method signature in the form {@code methodName[([arg_list])]},
 	 * where {@code arg_list} is an optional, comma-separated list of fully-qualified
 	 * type names, and attempts to resolve that signature against the supplied {@code Class}.
@@ -470,25 +475,33 @@ public abstract class BeanUtils {
 		Assert.notNull(clazz, "Class must not be null");
 		int startParen = signature.indexOf('(');
 		int endParen = signature.indexOf(')');
+		// 判断能否找到括号，开始括号存在，结束括号不存在
 		if (startParen > -1 && endParen == -1) {
 			throw new IllegalArgumentException("Invalid method signature '" + signature +
 					"': expected closing ')' for args list");
 		}
+		// 开始括号不存在，结束括号存在
 		else if (startParen == -1 && endParen > -1) {
 			throw new IllegalArgumentException("Invalid method signature '" + signature +
 					"': expected opening '(' for args list");
 		}
+		// 开始括号不存在，说明没有传递参数列表，直接寻找最短参数的方法，直接将方法签名当做方法名传入
 		else if (startParen == -1) {
 			return findMethodWithMinimalParameters(clazz, signature);
 		}
 		else {
+			// 走到这里说明传入了参数，并且说明括号匹配正确
 			String methodName = signature.substring(0, startParen);
+			// 截取括号开始的后一个位置到结束括号但是不包含结束括号，将参数取出来
+			// 按照逗号进行拆分,拆分出来的应该都是入：java.lang.String这样的全限定名
 			String[] parameterTypeNames =
 					StringUtils.commaDelimitedListToStringArray(signature.substring(startParen + 1, endParen));
+			// 按照参数个数创建数组
 			Class<?>[] parameterTypes = new Class<?>[parameterTypeNames.length];
 			for (int i = 0; i < parameterTypeNames.length; i++) {
 				String parameterTypeName = parameterTypeNames[i].trim();
 				try {
+					// 转成对应class对象
 					parameterTypes[i] = ClassUtils.forName(parameterTypeName, clazz.getClassLoader());
 				}
 				catch (Throwable ex) {
@@ -496,12 +509,16 @@ public abstract class BeanUtils {
 							parameterTypeName + "] for argument " + i + ". Root cause: " + ex);
 				}
 			}
+			// 真正干活的方法根据class类型， 方法名，参数类型列表，获取对应方法
 			return findMethod(clazz, methodName, parameterTypes);
 		}
 	}
 
 
 	/**
+	 * 检索给定class对象的JavaBeans的PropertyDescriptor。
+	 *  PropertyDescriptor描述Java Bean的一个属性通过一对访问器方法导出。
+	 *
 	 * Retrieve the JavaBeans {@code PropertyDescriptor}s of a given class.
 	 * @param clazz the Class to retrieve the PropertyDescriptors for
 	 * @return an array of {@code PropertyDescriptors} for the given class
@@ -513,6 +530,8 @@ public abstract class BeanUtils {
 	}
 
 	/**
+	 * 检索给定属性的JavaBeans {@code PropertyDescriptors}。
+	 *
 	 * Retrieve the JavaBeans {@code PropertyDescriptors} for the given property.
 	 * @param clazz the Class to retrieve the PropertyDescriptor for
 	 * @param propertyName the name of the property
@@ -528,9 +547,14 @@ public abstract class BeanUtils {
 	}
 
 	/**
+	 * 为给定的方法找到一个JavaBeans {@code PropertyDescriptor}，
+	 * 方法可以是读方法，也可以是写方法
+	 * bean属性。
+	 *
 	 * Find a JavaBeans {@code PropertyDescriptor} for the given method,
 	 * with the method either being the read method or the write method for
 	 * that bean property.
+	 *
 	 * @param method the method to find a corresponding PropertyDescriptor for,
 	 * introspecting its declaring class
 	 * @return the corresponding PropertyDescriptor, or {@code null} if none
@@ -542,6 +566,9 @@ public abstract class BeanUtils {
 	}
 
 	/**
+	 * 为给定的方法找到一个JavaBeans {@code PropertyDescriptor}，
+	 * 方法可以是读方法，也可以是写方法
+	 * bean属性。
 	 * Find a JavaBeans {@code PropertyDescriptor} for the given method,
 	 * with the method either being the read method or the write method for
 	 * that bean property.
@@ -564,6 +591,8 @@ public abstract class BeanUtils {
 	}
 
 	/**
+	 * 找到一个遵循'Editor'后缀约定的JavaBeans PropertyEditor
+	 *
 	 * Find a JavaBeans PropertyEditor following the 'Editor' suffix convention
 	 * (e.g. "mypackage.MyDomainClass" -> "mypackage.MyDomainClassEditor").
 	 * <p>Compatible to the standard JavaBeans convention as implemented by
@@ -617,6 +646,8 @@ public abstract class BeanUtils {
 	}
 
 	/**
+	 * 如果可能的话，从给定的类/接口确定给定属性的bean属性类型。
+	 *
 	 * Determine the bean property type for the given property from the
 	 * given classes/interfaces, if possible.
 	 * @param propertyName the name of the bean property
@@ -636,6 +667,8 @@ public abstract class BeanUtils {
 	}
 
 	/**
+	 * 为指定属性的写入方法获取一个新的MethodParameter对象。
+	 *
 	 * Obtain a new MethodParameter object for the write method of the
 	 * specified property.
 	 * @param pd the PropertyDescriptor for the property
@@ -653,6 +686,9 @@ public abstract class BeanUtils {
 	}
 
 	/**
+	 *
+	 * 检查给定的类型是否表示“简单”属性:简单值类型或简单值类型数组。
+	 *
 	 * Check if the given type represents a "simple" property: a simple value
 	 * type or an array of simple value types.
 	 * <p>See {@link #isSimpleValueType(Class)} for the definition of <em>simple
@@ -670,6 +706,10 @@ public abstract class BeanUtils {
 	}
 
 	/**
+	 * 检查给定类型是否表示“简单”值类型:基本类型或
+	 * 基本类型包装类型，枚举，字符串或其他字符序列，数字，一个
+	 * Date、时态、URI、URL、Locale或类。
+	 *
 	 * Check if the given type represents a "simple" value type: a primitive or
 	 * primitive wrapper, an enum, a String or other CharSequence, a Number, a
 	 * Date, a Temporal, a URI, a URL, a Locale, or a Class.
@@ -694,6 +734,12 @@ public abstract class BeanUtils {
 
 
 	/**
+	 * 将给定源bean的属性复制到目标bean中
+	 * 注意：源类和目标类不必匹配，甚至不用存在继承关系
+	 * 只要属性匹配的任何bean属性都能被复制
+	 * 源bean暴露的属性而目标bean未暴露将被忽略。
+	 * 这只是一个方便的方法。对于更复杂的转移需求考虑使用完整的BeanWrapper。
+	 *
 	 * Copy the property values of the given source bean into the target bean.
 	 * <p>Note: The source and target classes do not have to match or even be derived
 	 * from each other, as long as the properties match. Any bean properties that the
@@ -719,7 +765,8 @@ public abstract class BeanUtils {
 	 * consider using a full BeanWrapper.
 	 * @param source the source bean
 	 * @param target the target bean
-	 * @param editable the class (or interface) to restrict property setting to
+	 *
+	 * @param editable 要将属性设置限制到的类(或接口) the class (or interface) to restrict property setting to
 	 * @throws BeansException if the copying failed
 	 * @see BeanWrapper
 	 */
@@ -753,7 +800,7 @@ public abstract class BeanUtils {
 	 * @param source the source bean
 	 * @param target the target bean
 	 * @param editable the class (or interface) to restrict property setting to
-	 * @param ignoreProperties array of property names to ignore
+	 * @param ignoreProperties array of property names to ignore 忽略的属性名称数组
 	 * @throws BeansException if the copying failed
 	 * @see BeanWrapper
 	 */
@@ -763,33 +810,50 @@ public abstract class BeanUtils {
 		Assert.notNull(source, "Source must not be null");
 		Assert.notNull(target, "Target must not be null");
 
+		// 目标类的class
 		Class<?> actualEditable = target.getClass();
+		// 判断限制是否为空
 		if (editable != null) {
+			// 判断目标类是否为限制类的对象
 			if (!editable.isInstance(target)) {
 				throw new IllegalArgumentException("Target class [" + target.getClass().getName() +
 						"] not assignable to Editable class [" + editable.getName() + "]");
 			}
+			// 赋值给目标类的class
 			actualEditable = editable;
 		}
+		// 获取属性描述符
 		PropertyDescriptor[] targetPds = getPropertyDescriptors(actualEditable);
+		// 忽略的字段
 		List<String> ignoreList = (ignoreProperties != null ? Arrays.asList(ignoreProperties) : null);
 
+		// 循环属性
 		for (PropertyDescriptor targetPd : targetPds) {
+			// 获取写方法
 			Method writeMethod = targetPd.getWriteMethod();
+			// 写方法不为空 且忽略的字段列表不包含该字段
 			if (writeMethod != null && (ignoreList == null || !ignoreList.contains(targetPd.getName()))) {
+				// 获取目标类的属性
 				PropertyDescriptor sourcePd = getPropertyDescriptor(source.getClass(), targetPd.getName());
 				if (sourcePd != null) {
+					// 获取源类的读方法
 					Method readMethod = sourcePd.getReadMethod();
+					// 读方法不为空判断源类的读方法的返回值和写方法的参数类型是否匹配
 					if (readMethod != null &&
 							ClassUtils.isAssignable(writeMethod.getParameterTypes()[0], readMethod.getReturnType())) {
 						try {
+							// 判断方法是不是public的，如果不是，则设置accessible为true
 							if (!Modifier.isPublic(readMethod.getDeclaringClass().getModifiers())) {
 								readMethod.setAccessible(true);
 							}
+
+							// 调用源类的invoke方法，获取对应值
 							Object value = readMethod.invoke(source);
+							// 判断方法是不是public的，如果不是，则设置accessible为true
 							if (!Modifier.isPublic(writeMethod.getDeclaringClass().getModifiers())) {
 								writeMethod.setAccessible(true);
 							}
+							// 调用目标类的写方法，将对应值设置进去
 							writeMethod.invoke(target, value);
 						}
 						catch (Throwable ex) {
