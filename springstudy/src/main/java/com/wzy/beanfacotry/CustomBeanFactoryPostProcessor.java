@@ -5,7 +5,7 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.annotation.Configuration;
 
-@Configuration
+//@Configuration
 public class CustomBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 
     public CustomBeanFactoryPostProcessor() {

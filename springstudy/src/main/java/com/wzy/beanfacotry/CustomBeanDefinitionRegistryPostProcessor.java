@@ -6,7 +6,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.context.annotation.Configuration;
 
-@Configuration
+//@Configuration
 public class CustomBeanDefinitionRegistryPostProcessor implements BeanDefinitionRegistryPostProcessor {
     public CustomBeanDefinitionRegistryPostProcessor() {
         System.out.println("创建了CustomBeanDefinitionRegistryPostProcessor");
