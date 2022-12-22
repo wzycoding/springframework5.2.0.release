@@ -24,6 +24,8 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.lang.Nullable;
 
 /**
+ * 为应用程序提供配置的核心接口。在应用程序运行时，这是只读的，但如果实现支持这一点，则可以加载。
+ *
  * Central interface to provide configuration for an application.
  * This is read-only while the application is running, but may be
  * reloaded if the implementation supports this.
@@ -59,6 +61,7 @@ public interface ApplicationContext extends EnvironmentCapable, ListableBeanFact
 		MessageSource, ApplicationEventPublisher, ResourcePatternResolver {
 
 	/**
+	 * 返回唯一的应用上下文id
 	 * Return the unique id of this application context.
 	 * @return the unique id of the context, or {@code null} if none
 	 */
@@ -66,24 +69,28 @@ public interface ApplicationContext extends EnvironmentCapable, ListableBeanFact
 	String getId();
 
 	/**
+	 * 返回此上下文所属的已部署应用程序名称
 	 * Return a name for the deployed application that this context belongs to.
 	 * @return a name for the deployed application, or the empty String by default
 	 */
 	String getApplicationName();
 
 	/**
+	 * 返回上下文的友好的名称（更容易理解的描述信息）
 	 * Return a friendly name for this context.
 	 * @return a display name for this context (never {@code null})
 	 */
 	String getDisplayName();
 
 	/**
+	 * 返回第一次加载此上下文时的时间戳。
 	 * Return the timestamp when this context was first loaded.
 	 * @return the timestamp (ms) when this context was first loaded
 	 */
 	long getStartupDate();
 
 	/**
+	 * 返回父容器，如果没有父容器，则返回{@code null}，这是容器层次结构的root节点。
 	 * Return the parent context, or {@code null} if there is no parent
 	 * and this is the root of the context hierarchy.
 	 * @return the parent context, or {@code null} if there is no parent
@@ -92,6 +99,8 @@ public interface ApplicationContext extends EnvironmentCapable, ListableBeanFact
 	ApplicationContext getParent();
 
 	/**
+	 * 如果此应用上下文已经可用，则将此上下文的内部bean工厂返回为AutowireCapableBeanFactory。
+	 *
 	 * Expose AutowireCapableBeanFactory functionality for this context.
 	 * <p>This is not typically used by application code, except for the purpose of
 	 * initializing bean instances that live outside of the application context,

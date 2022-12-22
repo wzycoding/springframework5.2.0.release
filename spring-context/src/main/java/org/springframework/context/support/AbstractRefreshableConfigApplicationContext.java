@@ -24,6 +24,10 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
+ * {@link AbstractRefreshableApplicationContext}的子类添加了公共的处理
+ * 具体的配置文件作为xml的应用上下文的实现，如ClassPathXmlApplicationContext和FileSystemXmlApplicationContext
+ * 还有XmlWebApplicationContext
+ *
  * {@link AbstractRefreshableApplicationContext} subclass that adds common handling
  * of specified config locations. Serves as base class for XML-based application
  * context implementations such as {@link ClassPathXmlApplicationContext} and
@@ -46,12 +50,14 @@ public abstract class AbstractRefreshableConfigApplicationContext extends Abstra
 
 
 	/**
+	 * 创建一个新的AbstractRefreshableConfigApplicationContext 并且没有父容器
 	 * Create a new AbstractRefreshableConfigApplicationContext with no parent.
 	 */
 	public AbstractRefreshableConfigApplicationContext() {
 	}
 
 	/**
+	 * 创建一个新的AbstractRefreshableConfigApplicationContext并且设置父容器
 	 * Create a new AbstractRefreshableConfigApplicationContext with the given parent context.
 	 * @param parent the parent context
 	 */
@@ -61,6 +67,9 @@ public abstract class AbstractRefreshableConfigApplicationContext extends Abstra
 
 
 	/**
+	 * 设置配置文件位置给应用上下文，进行初始化
+	 * 使用逗号、分号或者空格分隔不同的配置文件
+	 * 如果没有设置，实现可以使用默认值作为配置文件位置
 	 * Set the config locations for this application context in init-param style,
 	 * i.e. with distinct locations separated by commas, semicolons or whitespace.
 	 * <p>If not set, the implementation may use a default as appropriate.
@@ -70,18 +79,25 @@ public abstract class AbstractRefreshableConfigApplicationContext extends Abstra
 	}
 
 	/**
+	 * 设置配置文件位置为这个应用上下文
+	 * 如果没设置，使用默认配置
 	 * Set the config locations for this application context.
 	 * <p>If not set, the implementation may use a default as appropriate.
 	 */
 	public void setConfigLocations(@Nullable String... locations) {
+		// 如果传入的配置文件不为空
 		if (locations != null) {
+			// 判断容器中是否有空的元素
 			Assert.noNullElements(locations, "Config locations must not be null");
+			// 按照传入配置文件的数组个数，创建相应长度的数组
 			this.configLocations = new String[locations.length];
 			for (int i = 0; i < locations.length; i++) {
+				// 解析位置文件的路径
 				this.configLocations[i] = resolvePath(locations[i]).trim();
 			}
 		}
 		else {
+			// 赋值配置文件为null
 			this.configLocations = null;
 		}
 	}
@@ -115,9 +131,12 @@ public abstract class AbstractRefreshableConfigApplicationContext extends Abstra
 	}
 
 	/**
+	 * 解析给定的路径，将占位符进行解析
+	 * 环境属性如果存在，应用他们到配置文件
 	 * Resolve the given path, replacing placeholders with corresponding
 	 * environment property values if necessary. Applied to config locations.
 	 * @param path the original file path
+	 * // 返回解析的文件路径
 	 * @return the resolved file path
 	 * @see org.springframework.core.env.Environment#resolveRequiredPlaceholders(String)
 	 */
@@ -145,6 +164,7 @@ public abstract class AbstractRefreshableConfigApplicationContext extends Abstra
 	}
 
 	/**
+	 * 如果尚未在具体上下文的构造函数中刷新，则触发{@link #refresh()}
 	 * Triggers {@link #refresh()} if not refreshed in the concrete context's
 	 * constructor already.
 	 */

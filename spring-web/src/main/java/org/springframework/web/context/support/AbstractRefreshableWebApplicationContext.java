@@ -35,6 +35,8 @@ import org.springframework.web.context.ServletConfigAware;
 import org.springframework.web.context.ServletContextAware;
 
 /**
+ *
+ * 抽象的可刷新的web上下文对象
  * {@link org.springframework.context.support.AbstractRefreshableApplicationContext}
  * subclass which implements the
  * {@link org.springframework.web.context.ConfigurableWebApplicationContext}
@@ -81,22 +83,25 @@ import org.springframework.web.context.ServletContextAware;
 public abstract class AbstractRefreshableWebApplicationContext extends AbstractRefreshableConfigApplicationContext
 		implements ConfigurableWebApplicationContext, ThemeSource {
 
+	// 运行此上下文的Servlet上下文
 	/** Servlet context that this context runs in. */
 	@Nullable
 	private ServletContext servletContext;
 
+    // 运行此上下文的Servlet配置(如果有的话)。
 	/** Servlet config that this context runs in, if any. */
 	@Nullable
 	private ServletConfig servletConfig;
 
+	// 此上下文的命名空间，如果是root，则为{@code null}
 	/** Namespace of this context, or {@code null} if root. */
 	@Nullable
 	private String namespace;
 
+    // 这个ApplicationContext的ThemeSource。
 	/** the ThemeSource for this ApplicationContext. */
 	@Nullable
 	private ThemeSource themeSource;
-
 
 	public AbstractRefreshableWebApplicationContext() {
 		setDisplayName("Root WebApplicationContext");
@@ -153,6 +158,8 @@ public abstract class AbstractRefreshableWebApplicationContext extends AbstractR
 	}
 
 	/**
+	 * 创建并返回一个新的{@link StandardServletEnvironment}。子类可以重写，以配置环境或专门化返回的环境类型。
+	 *
 	 * Create and return a new {@link StandardServletEnvironment}. Subclasses may override
 	 * in order to configure the environment or specialize the environment type returned.
 	 */
@@ -162,13 +169,14 @@ public abstract class AbstractRefreshableWebApplicationContext extends AbstractR
 	}
 
 	/**
+	 * 注册一个request/session 作用域的ServletContextAwareProcessor
 	 * Register request/session scopes, a {@link ServletContextAwareProcessor}, etc.
 	 */
 	@Override
 	protected void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 		//添加 ServletContextAwareProcessor 到 BeanFactory 容器中，
 		// 该 processor 实现 BeanPostProcessor 接口，
-		// 主要用于将ServletContext 传递给实现了 ServletContextAware 接口的 bean
+		// 主要用于将ServletContext 传递给实现了 【ServletContextAware 接口的 bean】
 		beanFactory.addBeanPostProcessor(new ServletContextAwareProcessor(this.servletContext, this.servletConfig));
 		//忽略掉相关的Aware类
 		beanFactory.ignoreDependencyInterface(ServletContextAware.class);
@@ -184,6 +192,7 @@ public abstract class AbstractRefreshableWebApplicationContext extends AbstractR
 	}
 
 	/**
+	 * 该实现支持位于ServletContext根目录下的文件路径。
 	 * This implementation supports file paths beneath the root of the ServletContext.
 	 * @see ServletContextResource
 	 */
@@ -194,6 +203,7 @@ public abstract class AbstractRefreshableWebApplicationContext extends AbstractR
 	}
 
 	/**
+	 * 该实现还支持未展开的war中的模式匹配。
 	 * This implementation supports pattern matching in unexpanded WARs too.
 	 * @see ServletContextResourcePatternResolver
 	 */
@@ -203,6 +213,7 @@ public abstract class AbstractRefreshableWebApplicationContext extends AbstractR
 	}
 
 	/**
+	 * 初始化主题功能。
 	 * Initialize the theme capability.
 	 */
 	@Override
@@ -212,6 +223,7 @@ public abstract class AbstractRefreshableWebApplicationContext extends AbstractR
 
 	/**
 	 * {@inheritDoc}
+	 * 替换{@code Servlet}相关的属性源。
 	 * <p>Replace {@code Servlet}-related property sources.
 	 */
 	@Override

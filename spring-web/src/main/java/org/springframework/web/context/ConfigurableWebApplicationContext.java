@@ -23,6 +23,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.lang.Nullable;
 
 /**
+ * 实现接口实现一个可配置的web 应用上下文
+ *
  * Interface to be implemented by configurable web application contexts.
  * Supported by {@link ContextLoader} and
  * {@link org.springframework.web.servlet.FrameworkServlet}.
