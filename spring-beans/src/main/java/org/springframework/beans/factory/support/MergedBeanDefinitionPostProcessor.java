@@ -49,7 +49,8 @@ public interface MergedBeanDefinitionPostProcessor extends BeanPostProcessor {
 	//这个算是将merged BeanDefinition暴露出来的一个回调
 	//重点关注AutowiredAnnotationBeanPostProcessor，该类会把@Autowired等标记的
 	//需要依赖注入的成员变量或者方法实例给记录下来，方便后续populateBean使用
-	void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName);
+	void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition,
+										 Class<?> beanType, String beanName);
 
 	/**
 	 * A notification that the bean definition for the specified name has been reset,
