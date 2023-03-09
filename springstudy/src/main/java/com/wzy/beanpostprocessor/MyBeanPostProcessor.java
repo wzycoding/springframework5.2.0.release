@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
  * @author wzy
  * @date 2023年01月02日11:16:42
  */
-//@Configuration
+@Configuration
 public class MyBeanPostProcessor implements BeanPostProcessor {
 
     @Override

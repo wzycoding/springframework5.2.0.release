@@ -1,5 +1,7 @@
 package com.wzy;
 
+import com.wzy.controller.WelcomeController;
+import com.wzy.entity.User;
 import com.wzy.service.UserService;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
@@ -25,7 +27,7 @@ public class Main {
 //
 //    }
 
-    public static void main(String[] args) {
+    public static void main1(String[] args) {
         String configFilePath = "//Users/wzy/project/source-studty/springframework5.2.0.release/springstudy/src/main/resources/beans.xml";
         FileSystemXmlApplicationContext context = new FileSystemXmlApplicationContext(configFilePath);
 
@@ -62,13 +64,14 @@ public class Main {
     }
 
 
-//    public static void main(String[] args) {
-//        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Main.class);
-//
-//        String[] beanDefinitionNames = context.getBeanDefinitionNames();
-//
-//        for (String beanDefinitionName : beanDefinitionNames) {
-//            System.out.println(beanDefinitionName);
-//        }
-//    }
+    public static void main(String[] args) {
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Main.class);
+
+//        User user5 = (User) context.getBean("user5");
+//        System.out.println(user5);
+
+        WelcomeController welcomeController = context.getBean(WelcomeController.class);
+        welcomeController.handleRequest();
+
+    }
 }
