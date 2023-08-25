@@ -240,7 +240,8 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 
 	@Override
-	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType,
+												String beanName) {
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, beanType, null);
 		metadata.checkConfigMembers(beanDefinition);
 	}
@@ -437,7 +438,8 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	}
 
 
-	private InjectionMetadata findAutowiringMetadata(String beanName, Class<?> clazz, @Nullable PropertyValues pvs) {
+	private InjectionMetadata findAutowiringMetadata(String beanName, Class<?> clazz,
+													 @Nullable PropertyValues pvs) {
 		// Fall back to class name as cache key, for backwards compatibility with custom callers.
 		String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
 		// Quick check on the concurrent map first, with minimal locking.

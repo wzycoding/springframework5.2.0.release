@@ -7,6 +7,6 @@ import org.springframework.stereotype.Service;
 public class HelloServiceImpl implements HelloService {
     @Override
     public void hello() {
-        System.out.println("hello spring source code!");
+        System.out.println("Hello spring source code!");
     }
 }
