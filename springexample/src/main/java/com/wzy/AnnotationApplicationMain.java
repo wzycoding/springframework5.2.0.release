@@ -12,24 +12,15 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-@Import(PersonImportBeanDefinitionRegistrar.class)
+@Import(PersonConfiguration.class)
 @Configuration
 public class AnnotationApplicationMain {
 
     public static void main(String[] args) {
         ApplicationContext context = new AnnotationConfigApplicationContext(AnnotationApplicationMain.class);
-        String[] beanDefinitionNames = context.getBeanDefinitionNames();
 
-        System.out.println("====输出所有bean定义信息====");
-        for (String beanDefinitionName : beanDefinitionNames) {
-            System.out.println(beanDefinitionName);
-        }
+        PersonConfiguration.Person bob = (PersonConfiguration.Person) context.getBean("bobPerson");
 
-        System.out.println("====获取bean对象====");
-        Student student = context.getBean(Student.class);
-        Teacher teacher = context.getBean(Teacher.class);
-
-        System.out.println(student);
-        System.out.println(teacher);
+        System.out.println(bob);
     }
 }

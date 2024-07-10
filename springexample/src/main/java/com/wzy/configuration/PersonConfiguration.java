@@ -48,7 +48,7 @@ public class PersonConfiguration {
 
         @Override
         public String toString() {
-            return "PersonHandler{" +
+            return "Person{" +
                     "name='" + name + '\'' +
                     ", age=" + age +
                     ", sex=" + sex +
